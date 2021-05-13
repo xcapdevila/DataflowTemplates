@@ -1,4 +1,4 @@
-package com.google.cloud.teleport.templates;
+package com.google.cloud.teleport.templates.custom;
 
 import com.google.cloud.teleport.templates.custom.DatetimeHelper;
 import java.time.LocalDateTime;
