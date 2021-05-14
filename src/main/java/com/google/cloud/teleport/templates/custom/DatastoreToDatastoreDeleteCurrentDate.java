@@ -34,6 +34,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Dataflow template which deletes pulled Datastore Entities.
+ *
+ * Supports GQL queries with custom NOW function:
+ * - SELECT * FROM `Kind` WHERE timestamp < ${NOW-12h}
+ * - SELECT * FROM `Kind` WHERE timestamp < ${NOW-2y} AND timestamp > ${NOW-5y}
+ *
+ * NOW format is ${NOWOperationValueTimeUnit}.
+ * Operation:
+ * - "+" to add
+ * - "-" to substract
+ * Value:
+ * - any integer greater than zero.
+ * TimeUnit:
+ * - "y" for years
+ * - "m" for months
+ * - "d" for days
+ * - "h" for hours
  */
 public class DatastoreToDatastoreDeleteCurrentDate {
 
