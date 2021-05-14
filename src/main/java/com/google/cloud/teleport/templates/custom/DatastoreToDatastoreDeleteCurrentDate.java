@@ -39,13 +39,13 @@ import org.slf4j.LoggerFactory;
  * - SELECT * FROM `Kind` WHERE timestamp < ${NOW-12h}
  * - SELECT * FROM `Kind` WHERE timestamp < ${NOW-2y} AND timestamp > ${NOW-5y}
  *
- * NOW format is ${NOWOperationValueTimeUnit}.
- * Operation:
+ * NOW format is ${NOW_Operation__Value__TimeUnit_}.
+ * _Operation_:
  * - "+" to add
- * - "-" to substract
- * Value:
+ * - "-" to subtract
+ * _Value_:
  * - any integer greater than zero.
- * TimeUnit:
+ * _TimeUnit_:
  * - "y" for years
  * - "m" for months
  * - "d" for days
