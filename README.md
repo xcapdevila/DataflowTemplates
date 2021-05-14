@@ -55,7 +55,7 @@ the official [docs](https://cloud.google.com/dataflow/docs/templates/provided-te
 
 Main goal: Datastore Bulk Delete based on a certain amount of time since now (current datetime).
 
-As Datastore lacks the ability to perform queries based on the current date, as it does NOT provide a Now() like function, it is required to do workaround in order to achieve our goal.
+As Datastore lacks the ability to perform queries based on the current date, as it does NOT provide a Now() alike function, it is required to do workaround in order to achieve our goal.
 
 This template is based in [Datastore Bulk Delete](src/main/java/com/google/cloud/teleport/templates/DatastoreToDatastoreDelete.java) and uses the same [metadata](https://storage.googleapis.com/dataflow-templates/latest/Datastore_to_Datastore_Delete_metadata).
 
