@@ -21,6 +21,7 @@ their functionality.
 * [Bulk Compressor](src/main/java/com/google/cloud/teleport/templates/BulkCompressor.java)
 * [Bulk Decompressor](src/main/java/com/google/cloud/teleport/templates/BulkDecompressor.java)
 * [Datastore Bulk Delete](src/main/java/com/google/cloud/teleport/templates/DatastoreToDatastoreDelete.java) *
+* [Datastore Bulk Delete (with custom NOW function)](src/main/java/com/google/cloud/teleport/templates/custom/DatastoreToDatastoreDeleteCurrentDate.java) * (Unofficial)
 * [Datastore to BigQuery](src/main/java/com/google/cloud/teleport/templates/DatastoreToBigQuery.java)
 * [Datastore to GCS Text](src/main/java/com/google/cloud/teleport/templates/DatastoreToText.java) *
 * [Datastore to Pub/Sub](src/main/java/com/google/cloud/teleport/templates/DatastoreToPubsub.java) *
@@ -49,6 +50,37 @@ their functionality.
 
 For documentation on each template's usage and parameters, please see
 the official [docs](https://cloud.google.com/dataflow/docs/templates/provided-templates).
+
+### Datastore Bulk Delete (with custom NOW function)
+
+Main goal: Datastore Bulk Delete based on a certain amount of time since now (current datetime).
+
+As Datastore lacks the ability to perform queries based on the current date, as it does NOT provide a Now() like function, it is required to do workaround in order to achieve our goal.
+
+This template is based in [Datastore Bulk Delete](src/main/java/com/google/cloud/teleport/templates/DatastoreToDatastoreDelete.java) and uses the same [metadata](https://storage.googleapis.com/dataflow-templates/latest/Datastore_to_Datastore_Delete_metadata).
+
+#### Custom NOW function (GQL based)
+
+Our NOW function is based on a regexp that has to be added in the GQL query (required param), such as:
+- SELECT * FROM \`Kind` WHERE timestamp < ${NOW-12h}
+- SELECT * FROM \`Kind` WHERE timestamp < ${NOW-2y} AND timestamp > ${NOW-5y}
+
+Regexp is defined by the following pattern:
+```java
+String NOW_PATTERN = "\\$\\{NOW(\\+|\\-)(\\d*?)(y|m|d|h)\\}";
+```
+
+NOW format is ${NOW_Operation__Value_TimeUnit_}.
+- \_Operation_:
+    - "+" to add
+    - "-" to subtract
+- \_Value_:
+    - any integer greater than zero.
+- \_TimeUnit_:
+    - "y" for years
+    - "m" for months
+    - "d" for days
+    - "h" for hours
 
 ## Getting Started
 
