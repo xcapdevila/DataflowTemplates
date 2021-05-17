@@ -20,26 +20,25 @@ import com.google.cloud.teleport.templates.common.DatastoreConverters.DatastoreD
 import com.google.cloud.teleport.templates.common.DatastoreConverters.DatastoreDeleteOptions;
 import com.google.cloud.teleport.templates.common.DatastoreConverters.DatastoreReadOptions;
 import com.google.cloud.teleport.templates.common.DatastoreConverters.ReadJsonEntities;
-import com.google.cloud.teleport.templates.common.JavascriptTextTransformer.JavascriptTextTransformerOptions;
-import com.google.cloud.teleport.templates.common.JavascriptTextTransformer.TransformTextViaJavascript;
 import java.time.LocalDateTime;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.options.ValueProvider.NestedValueProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Dataflow template which deletes pulled Datastore Entities.
  *
+ * <pre>
  * Supports GQL queries with custom NOW function:
- * - SELECT * FROM `Kind` WHERE timestamp < ${NOW-12h}
- * - SELECT * FROM `Kind` WHERE timestamp < ${NOW-2y} AND timestamp > ${NOW-5y}
+ * - SELECT * FROM `Kind` WHERE string_field < ${NOW-12h}
+ * - SELECT * FROM `Kind` WHERE string_field < ${NOW-2y} AND string_field > ${NOW-5y}
+ * - SELECT * FROM `Kind` WHERE date_field < ${DNOW-2y}
+ * - SELECT * FROM `Kind` WHERE date_field < ${DNOW-2y} AND date_field > ${DNOW-5y}
+ * - SELECT * FROM `Kind` WHERE date_field < ${DNOW-2y} AND string_field > ${NOW-5y}
  *
  * NOW format is ${NOW_Operation__Value__TimeUnit_}.
+ *
  * _Operation_:
  * - "+" to add
  * - "-" to subtract
@@ -50,12 +49,21 @@ import org.slf4j.LoggerFactory;
  * - "m" for months
  * - "d" for days
  * - "h" for hours
+ * </pre>
  */
 public class DatastoreToDatastoreDeleteCurrentDate {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DatastoreToDatastoreDeleteCurrentDate.class);
-  private static final String NOW_PATTERN = "\\$\\{NOW(\\+|\\-)(\\d*?)(y|m|d|h)\\}";
-  private static final Pattern PATTERN = Pattern.compile(NOW_PATTERN);
+  /**
+   * Custom PipelineOptions.
+   */
+  public interface DatastoreToDatastoreDeleteOptions extends
+      PipelineOptions,
+      DatastoreReadOptions,
+      DatastoreDeleteOptions {
+
+  }
+
+  private static final LocalDateTime NOW = LocalDateTime.now();
 
   /**
    * Runs a pipeline which reads in Entities from datastore, passes in the JSON encoded Entities to a Javascript UDF, and deletes all the Entities.
@@ -74,54 +82,20 @@ public class DatastoreToDatastoreDeleteCurrentDate {
     Pipeline pipeline = Pipeline.create(options);
 
     pipeline
-        .apply(ReadJsonEntities.newBuilder()
+        .apply("Read entities from Datastore", ReadJsonEntities.newBuilder()
             .setGqlQuery(
                 NestedValueProvider.of(
                     options.getDatastoreReadGqlQuery(),
-                    DatastoreToDatastoreDeleteCurrentDate::parseGqlStatement)
+                    gqlStatement -> DatetimeRegexParser.process(gqlStatement, NOW))
             )
             .setProjectId(options.getDatastoreReadProjectId())
             .setNamespace(options.getDatastoreReadNamespace())
             .build())
-        .apply(TransformTextViaJavascript.newBuilder()
-            .setFileSystemPath(options.getJavascriptTextTransformGcsPath())
-            .setFunctionName(options.getJavascriptTextTransformFunctionName())
-            .build())
-        .apply(DatastoreDeleteEntityJson.newBuilder()
+        .apply("Delete entities from Datastore", DatastoreDeleteEntityJson.newBuilder()
             .setProjectId(options.getDatastoreDeleteProjectId())
             .build());
 
     pipeline.run();
-  }
-
-  private static String parseGqlStatement(String gqlStatement) {
-    final Matcher matcher = PATTERN.matcher(gqlStatement);
-    while (matcher.find()) {
-      final String parsedDate = DatetimeHelper
-          .create()
-          .withNow(LocalDateTime.now())
-          .withOperation(matcher.group(1))
-          .withValue(matcher.group(2))
-          .withTimeUnit(matcher.group(3))
-          .build()
-          .calculate();
-      LOG.info("parsedDate: {}", parsedDate);
-
-      gqlStatement = gqlStatement.replaceFirst(PATTERN.pattern(), "'" + parsedDate + "'");
-      LOG.info("gqlStatement: {}", gqlStatement);
-    }
-    return gqlStatement;
-  }
-
-  /**
-   * Custom PipelineOptions.
-   */
-  public interface DatastoreToDatastoreDeleteOptions extends
-      PipelineOptions,
-      DatastoreReadOptions,
-      JavascriptTextTransformerOptions,
-      DatastoreDeleteOptions {
-
   }
 
 }
