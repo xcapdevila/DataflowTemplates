@@ -21,6 +21,10 @@ their functionality.
 * [Bulk Compressor](src/main/java/com/google/cloud/teleport/templates/BulkCompressor.java)
 * [Bulk Decompressor](src/main/java/com/google/cloud/teleport/templates/BulkDecompressor.java)
 * [Datastore Bulk Delete](src/main/java/com/google/cloud/teleport/templates/DatastoreToDatastoreDelete.java) *
+* [Datastore Bulk Delete (w/ NOW function)](src/main/java/com/google/cloud/teleport/templates/custom/DatastoreToDatastoreDeleteCurrentDate.java) **
+* [Datastore Bulk Delete (w/ NOW function) Metadata](src/main/resources/metadata/DatastoreToDatastoreDeleteCurrentDate.json_metadata)
+* [Datastore Bulk Delete (w/ NOW function + UDF)](src/main/java/com/google/cloud/teleport/templates/custom/DatastoreToDatastoreDeleteCurrentDateWithUdf.java) * **
+* [Datastore Bulk Delete (w/ NOW function + UDF) Metadata](src/main/resources/metadata/DatastoreToDatastoreDeleteCurrentDateWithUdf.json_metadata)
 * [Datastore to BigQuery](src/main/java/com/google/cloud/teleport/templates/DatastoreToBigQuery.java)
 * [Datastore to GCS Text](src/main/java/com/google/cloud/teleport/templates/DatastoreToText.java) *
 * [Datastore to Pub/Sub](src/main/java/com/google/cloud/teleport/templates/DatastoreToPubsub.java) *
@@ -44,11 +48,51 @@ their functionality.
 * [Spanner to GCS Text](src/main/java/com/google/cloud/teleport/templates/SpannerToText.java)
 * [Word Count](src/main/java/com/google/cloud/teleport/templates/WordCount.java)
 
-
 \* Supports user-defined functions (UDFs).
+
+\** Custom template.
 
 For documentation on each template's usage and parameters, please see
 the official [docs](https://cloud.google.com/dataflow/docs/templates/provided-templates).
+
+### Datastore Bulk Delete (with custom NOW function)
+
+Main goal: Datastore Bulk Delete based on a certain amount of time since now (current datetime).
+
+As Datastore lacks the ability to perform queries based on the current date, as it does NOT provide a Now() alike function, it is required to do workaround in order to achieve our goal.
+
+This template is based on [Datastore Bulk Delete](src/main/java/com/google/cloud/teleport/templates/DatastoreToDatastoreDelete.java) and uses the same [metadata](https://storage.googleapis.com/dataflow-templates/latest/Datastore_to_Datastore_Delete_metadata).
+
+#### Custom NOW function (GQL based)
+
+Our NOW function is based on a regexp that has to be added in the GQL query (required param), such as:
+- SELECT * FROM \`Kind` WHERE string_field < ${DNOW-12h}
+- SELECT * FROM \`Kind` WHERE string_field < ${NOW-2y} AND date_field > ${DNOW-5y}
+
+Regexp is defined by the following pattern:
+```java
+String NOW_PATTERN = "\\$\\{NOW(\\+|\\-)(\\d*?)(y|m|d|h)\\}";
+String DNOW_PATTERN = "\\$\\{DNOW(\\+|\\-)(\\d*?)(y|m|d|h)\\}";
+```
+
+NOW/DNOW format is ${NOW_Operation__Value_TimeUnit_}.
+
+- \_Operation_:
+    - "+" to add
+    - "-" to subtract
+- \_Value_:
+    - any integer greater than zero.
+- \_TimeUnit_:
+    - "y" for years
+    - "m" for months
+    - "d" for days
+    - "h" for hours
+
+Input: ```${NOW-5y}```
+Outcome: ```'2016-05-17T11:42:11.206'```
+
+Input: ```${DNOW-5y}```
+Outcome: ```DATETIME('2016-05-17T11:42:11.206Z')```
 
 ## Getting Started
 
