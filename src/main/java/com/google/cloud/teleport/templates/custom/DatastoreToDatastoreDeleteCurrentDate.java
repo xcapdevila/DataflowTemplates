@@ -38,6 +38,7 @@ import org.apache.beam.sdk.options.ValueProvider.NestedValueProvider;
  * - SELECT * FROM `Kind` WHERE date_field < ${DNOW-2y} AND string_field > ${NOW-5y}
  *
  * NOW format is ${NOW_Operation__Value__TimeUnit_}.
+ * DNOW format is ${DNOW_Operation__Value__TimeUnit_}.
  *
  * _Operation_:
  * - "+" to add
