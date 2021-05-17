@@ -1,0 +1,62 @@
+{
+  "name": "Datastore Bulk Delete With Custom NOW/DNOW Function",
+  "description": "A pipeline which reads in Entities (via a GQL query) from Datastore, optionally passes in the JSON encoded Entities to a JavaScript UDF, and then deletes all matching Entities in the selected target project.",
+  "parameters": [
+    {
+      "name": "datastoreReadGqlQuery",
+      "label": "GQL Query",
+      "helpText": "GQL Query which specifies which entities to grab. e.g: \"SELECT * FROM MyKind\"",
+      "regexes": [
+        "^.+$"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "datastoreReadProjectId",
+      "label": "Read data from Datastore Project Id of",
+      "helpText": "The Google Cloud Project Id of the Datastore instance that you want to read data from",
+      "regexes": [
+        "^([a-z0-9\\.]+:)?[a-z0-9][a-z0-9-]{5,29}$"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "datastoreReadNamespace",
+      "label": "Read data from Datastore Namespace of",
+      "helpText": "Namespace of requested Entities. Set as \"\" for default namespace",
+      "regexes": [
+        "[0-9A-Za-z._-]{0,100}"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "datastoreDeleteProjectId",
+      "label": "Delete all matching entities from the GQL Query present in this Datastore Project Id of",
+      "helpText": "Google Cloud Project Id of where to delete the datastore entities",
+      "regexes": [
+        "^([a-z0-9\\.]+:)?[a-z0-9][a-z0-9-]{5,29}$"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "javascriptTextTransformGcsPath",
+      "label": "JavaScript UDF GCS path",
+      "helpText": "[Optional] A GCS path which contains all your JavaScript code. e.g: \"gs://your-bucket/your-transforms/*.js\". If you don't want to use a UDF leave this field blank.",
+      "isOptional": true,
+      "regexes": [
+        "^gs:\\/\\/[^\\n\\r]+$"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "javascriptTextTransformFunctionName",
+      "label": "JavaScript UDF function name",
+      "helpText": "[Optional] Name of the Function to be called. If this function returns a value of undefined or null for a given Datastore Entity, then that Entity will not be deleted. If you have the JavaScript code of: \"function myTransform(inJson) { ...dostuff...}\" then your function name is \"myTransform\". If you don't want to use a UDF leave this field blank.",
+      "isOptional": true,
+      "regexes": [
+        "^.+$"
+      ],
+      "paramType": "TEXT"
+    }
+  ]
+}
