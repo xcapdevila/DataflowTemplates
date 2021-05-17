@@ -1,0 +1,42 @@
+{
+  "name": "Datastore Bulk Delete With Custom NOW/DNOW Function",
+  "description": "A pipeline which reads in Entities (via a GQL query) from Datastore and deletes all matching Entities in the selected target project.",
+  "parameters": [
+    {
+      "name": "datastoreReadGqlQuery",
+      "label": "GQL Query",
+      "helpText": "GQL Query which specifies which entities to grab. e.g: \"SELECT * FROM MyKind\"",
+      "regexes": [
+        "^.+$"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "datastoreReadProjectId",
+      "label": "Read data from Datastore Project Id of",
+      "helpText": "The Google Cloud Project Id of the Datastore instance that you want to read data from",
+      "regexes": [
+        "^([a-z0-9\\.]+:)?[a-z0-9][a-z0-9-]{5,29}$"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "datastoreReadNamespace",
+      "label": "Read data from Datastore Namespace of",
+      "helpText": "Namespace of requested Entities. Set as \"\" for default namespace",
+      "regexes": [
+        "[0-9A-Za-z._-]{0,100}"
+      ],
+      "paramType": "TEXT"
+    },
+    {
+      "name": "datastoreDeleteProjectId",
+      "label": "Delete all matching entities from the GQL Query present in this Datastore Project Id of",
+      "helpText": "Google Cloud Project Id of where to delete the datastore entities",
+      "regexes": [
+        "^([a-z0-9\\.]+:)?[a-z0-9][a-z0-9-]{5,29}$"
+      ],
+      "paramType": "TEXT"
+    }
+  ]
+}
