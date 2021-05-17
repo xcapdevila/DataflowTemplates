@@ -1,7 +1,15 @@
-target/
-bin/
-dependency-reduced-pom.xml
+# Maven build files
+**/bin/**/*
+**/dependency-reduced-pom.xml
+**/target/**/*
 
-.idea
+# IntelliJ files
+**/.idea/**/*
+**/*.iml
+**/*.ipr
+**/*.iws
+**/out/**/*
 
-*.iml
+# MacOSX Files
+**/.DS_Store/**/*
+**/.DS_Store
